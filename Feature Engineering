@@ -1,11 +1,56 @@
-Feuture Engineering
-1.	Feature Selection:
-pythonCopy code
-# Selecting the most influential features: 'Quality and Safety' and 'Affordability' selected_features = food_security_df_normalized[['Quality and Safety', 'Affordability']] 
-2.	Hierarchical Clustering on Selected Features:
-pythonCopy code
-# Perform hierarchical clustering on the selected features linked_selected = linkage(selected_features, method='ward') # Visualizing the dendrogram plt.figure(figsize=(12, 6)) dendrogram(linked_selected, truncate_mode='level', p=3, color_threshold=0) plt.title('Dendrogram for Selected Features') plt.xlabel('Countries') plt.ylabel('Euclidean Distance') plt.show() 
-3.	Partitioning into Clusters & Visualization:
-pythonCopy code
-# Partitioning the countries into two clusters based on the selected features selected_labels = fcluster(linked_selected, 2, criterion='maxclust') # Add cluster labels to the DataFrame food_security_df_normalized['Selected_Cluster'] = selected_labels # Visualize the clusters using the two selected features plt.figure(figsize=(12, 8)) sns.scatterplot(x=food_security_df_normalized['Quality and Safety'], y=food_security_df_normalized['Affordability'], hue=selected_labels, palette='viridis', s=100, alpha=0.7) plt.title('Clusters based on Quality and Safety & Affordability') plt.xlabel('Quality and Safety') plt.ylabel('Affordability') plt.legend(title='Cluster') plt.show()
+# Created by SvB and Stoyko
 
+# ==========================
+# 1. Feature Selection
+# ==========================
+
+# Selecting the most influential features: 'Quality and Safety' and 'Affordability'
+selected_features = food_security_df_normalized[['Quality and Safety', 'Affordability']]
+
+# Alternative Comment:
+# Extracting the 'Quality and Safety' and 'Affordability' columns from the normalized DataFrame.
+
+# ==========================
+# 2. Hierarchical Clustering on Selected Features
+# ==========================
+
+# Perform hierarchical clustering on the selected features
+linked_selected = linkage(selected_features, method='ward')
+
+# Visualizing the dendrogram
+plt.figure(figsize=(12, 6))
+dendrogram(linked_selected, truncate_mode='level', p=3, color_threshold=0)
+plt.title('Dendrogram for Selected Features')
+plt.xlabel('Countries')
+plt.ylabel('Euclidean Distance')
+plt.show()
+
+# Alternative Comment:
+# Using the ward method to perform hierarchical clustering and visualizing the result with a dendrogram.
+
+# ==========================
+# 3. Partitioning into Clusters & Visualization
+# ==========================
+
+# Partitioning the countries into two clusters based on the selected features
+selected_labels = fcluster(linked_selected, 2, criterion='maxclust')
+
+# Add cluster labels to the DataFrame
+food_security_df_normalized['Selected_Cluster'] = selected_labels
+
+# Visualize the clusters using the two selected features
+plt.figure(figsize=(12, 8))
+sns.scatterplot(x=food_security_df_normalized['Quality and Safety'],
+                y=food_security_df_normalized['Affordability'],
+                hue=selected_labels,
+                palette='viridis',
+                s=100,
+                alpha=0.7)
+plt.title('Clusters based on Quality and Safety & Affordability')
+plt.xlabel('Quality and Safety')
+plt.ylabel('Affordability')
+plt.legend(title='Cluster')
+plt.show()
+
+# Alternative Comment:
+# Dividing the countries into two main clusters and visualizing the clusters using a scatterplot.
