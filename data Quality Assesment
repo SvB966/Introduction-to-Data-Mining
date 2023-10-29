@@ -1,0 +1,72 @@
+# Python Script for Data Quality Assessment & Comparative Analysis
+
+# Import necessary libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Define helper functions
+def load_dataset(filepath):
+    return pd.read_csv(filepath)
+
+def check_missing_values(df):
+    return df.isnull().sum()
+
+def check_data_types(df):
+    return df.dtypes
+
+def check_negative_scores(df, columns):
+    return df[df[columns] < 0].count()
+
+def check_duplicates(df):
+    duplicate_rows = df.duplicated().sum()
+    duplicate_countries = df['Country'].duplicated().sum()
+    return duplicate_rows, duplicate_countries
+
+def plot_boxplots(df, columns, title):
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(15, 10))
+    sns.boxplot(data=df[columns])
+    plt.title(title)
+    plt.ylabel("Score")
+    plt.xticks(rotation=45)
+    plt.show()
+
+# Load the 2022 dataset and perform assessments
+df_2022 = load_dataset('/mnt/data/Global Food Security Index 2022.csv')
+missing_values_2022 = check_missing_values(df_2022)
+data_types_2022 = check_data_types(df_2022)
+score_columns_2022 = ['Overall score', 'Affordability', 'Availability', 'Quality and Safety', 'Sustainability and Adaptation']
+negative_scores_2022 = check_negative_scores(df_2022, score_columns_2022)
+duplicate_rows_2022, duplicate_countries_2022 = check_duplicates(df_2022)
+score_statistics_2022 = df_2022[score_columns_2022].describe()
+
+# Plot 2022 score columns
+plot_boxplots(df_2022, score_columns_2022, "Boxplots for Score Columns (2022)")
+
+# Load the 2019 dataset, adjust headers, and perform assessments
+df_2019 = load_dataset('/mnt/data/Global Food Security Index 2019.csv')
+df_2019.columns = df_2019.iloc[0]
+df_2019 = df_2019.drop(0)
+df_2019 = df_2019.rename(columns={
+    'No [7]': 'Rank',
+    'Country': 'Country',
+    'Overall Score': 'Overall score',
+    'Affordability': 'Affordability',
+    'Availability': 'Availability',
+    'Quality & safety': 'Quality and Safety'
+})
+
+missing_values_2019 = check_missing_values(df_2019)
+data_types_2019 = check_data_types(df_2019)
+score_columns_2019 = ['Overall score', 'Affordability', 'Availability', 'Quality and Safety']
+
+for col in score_columns_2019:
+    df_2019[col] = df_2019[col].astype(float)
+
+negative_scores_2019 = check_negative_scores(df_2019, score_columns_2019)
+duplicate_rows_2019, duplicate_countries_2019 = check_duplicates(df_2019)
+score_statistics_2019 = df_2019[score_columns_2019].describe()
+
+# Plot 2019 score columns
+plot_boxplots(df_2019, score_columns_2019, "Boxplots for Score Columns (2019)")
