@@ -1,0 +1,85 @@
+Multiple Linear Regression
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Load the dataset
+dataset = pd.read_csv('/mnt/data/Global Food Security Index 2022.csv')
+
+# Remove the 'Unnamed: 0' column
+dataset.drop('Unnamed: 0', axis=1, inplace=True)
+
+# Handle special cases in the 'Rank' column before conversion
+dataset['Rank'] = dataset['Rank'].str.replace(r'[^0-9]', '', regex=True).astype(int)
+
+# Check for missing values
+missing_values = dataset.isnull().sum()
+
+# Exclude the 'Country' column for clustering
+features_for_clustering = dataset.drop('Country', axis=1)
+
+# Standardize the numerical columns for clustering
+scaler = StandardScaler()
+scaled_features_for_clustering = scaler.fit_transform(features_for_clustering)
+
+# Convert back to DataFrame for better readability
+scaled_df_for_clustering = pd.DataFrame(scaled_features_for_clustering, columns=features_for_clustering.columns)
+
+# Separate predictors and target for regression
+X = dataset.drop(['Country', 'Overall score'], axis=1)  # Predictors
+y = dataset['Overall score']  # Target
+
+# Calculate correlation matrix to check for multicollinearity
+correlation_matrix = X.corr()
+
+# Plotting the heatmap of the correlation matrix
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+plt.title("Correlation Matrix of Predictors")
+plt.show()
+
+# Calculate VIF for each predictor
+vif_data = pd.DataFrame()
+vif_data["Feature"] = X.columns
+vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+
+# Initialize PCA
+pca = PCA()
+
+# Apply PCA to the data
+principal_components = pca.fit_transform(X)
+
+# Calculate explained variance ratios
+explained_variance = pca.explained_variance_ratio_
+
+# Create a cumulative sum of explained variances
+cumulative_variance = np.cumsum(explained_variance)
+
+# Retain the first 3 principal components
+pca = PCA(n_components=3)
+transformed_X = pca.fit_transform(X)
+
+# Split the data into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(transformed_X, y, test_size=0.2, random_state=42)
+
+# Initialize and train the Multiple Linear Regression model
+linear_regression_model = LinearRegression()
+linear_regression_model.fit(X_train, y_train)
+
+# Predict on the testing set
+y_pred = linear_regression_model.predict(X_test)
+
+# Evaluate the model's performance
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+# Display results
+print("Mean Squared Error (MSE):", mse)
+print("R-squared (R^2) Value:", r2)
