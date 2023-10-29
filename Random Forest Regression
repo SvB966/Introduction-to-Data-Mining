@@ -1,0 +1,50 @@
+# Importing necessary libraries
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.preprocessing import PolynomialFeatures
+
+# 1. Data Loading and Preliminary Exploration
+df_2019 = pd.read_csv('/mnt/data/Global Food Security Index 2019(1).csv')
+df_2022 = pd.read_csv('/mnt/data/Global Food Security Index 2022 (1).csv')
+
+# 2. Data Cleaning and Preprocessing
+df_2019_cleaned = df_2019.drop(columns=['Country'])
+df_2022_cleaned = df_2022.drop(columns=['Country'])
+
+# Splitting the datasets into training and test sets
+X_train_cleaned = df_2019_cleaned.drop(columns=['Overall Score'])
+y_train_cleaned = df_2019_cleaned['Overall Score']
+X_test_cleaned = df_2022_cleaned.drop(columns=['Overall Score'])
+y_test_cleaned = df_2022_cleaned['Overall Score']
+
+# Adjusting for missing 'Quality & safety' feature in the 2022 dataset
+X_train_cleaned = X_train_cleaned.drop(columns=['Quality & safety'])
+
+# 3. Model Training and Evaluation
+# Instantiate and train the Random Forest Regressor
+rf_regressor = RandomForestRegressor(random_state=42)
+rf_regressor.fit(X_train_cleaned, y_train_cleaned)
+y_pred = rf_regressor.predict(X_test_cleaned)
+
+# 4. Feature Engineering using Polynomial Features
+poly = PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)
+X_train_poly = poly.fit_transform(X_train_cleaned)
+X_test_poly = poly.transform(X_test_cleaned)
+
+# Retraining the Random Forest Regressor with the enhanced features
+rf_regressor_poly = RandomForestRegressor(random_state=42)
+rf_regressor_poly.fit(X_train_poly, y_train_cleaned)
+y_pred_poly = rf_regressor_poly.predict(X_test_poly)
+
+# 5. Model Parameters Fine-tuning using RandomizedSearchCV
+param_grid = {
+    'n_estimators': [30, 50, 70, 100],
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+random_search = RandomizedSearchCV(rf_regressor_poly, param_distributions=param_grid, n_iter=10, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1, random_state=42, verbose=1)
+random_search.fit(X_train_poly, y_train_cleaned)
+y_pred_best_random = random_search.best_estimator_.predict(X_test_poly)
