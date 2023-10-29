@@ -1,0 +1,9 @@
+1.	Data Preparation:
+import pandas as pd from sklearn.preprocessing import MinMaxScaler # Load data food_security_df = pd.read_csv("/mnt/data/Global Food Security Index 2022.csv") # Normalize the data scaler = MinMaxScaler() columns_to_normalize = ['Affordability', 'Availability', 'Quality and Safety', 'Overall'] food_security_df_normalized = food_security_df.copy() food_security_df_normalized[columns_to_normalize] = scaler.fit_transform(food_security_df[columns_to_normalize]) 
+2.	Hierarchical Clustering:
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster import matplotlib.pyplot as plt # Perform hierarchical clustering linked = linkage(food_security_df_normalized[columns_to_normalize], method='ward') # Dendrogram visualization plt.figure(figsize=(12, 6)) dendrogram(linked, truncate_mode='level', p=3, color_threshold=0) plt.title('Dendrogram') plt.xlabel('Countries') plt.ylabel('Euclidean Distance') plt.show() # Assigning clusters based on dendrogram food_security_df_normalized['Cluster'] = fcluster(linked, 2, criterion='maxclust') 
+3.	Feature Selection/Engineering and Re-clustering:
+# Using selected features for clustering selected_features = food_security_df_normalized[['Quality and Safety', 'Affordability']] linked_selected = linkage(selected_features, method='ward') # Partitioning the countries into two clusters based on the selected features selected_labels = fcluster(linked_selected, 2, criterion='maxclust') food_security_df_normalized['Selected_Cluster'] = selected_labels 
+4.	Cluster Visualization:
+import seaborn as sns # Visualize clusters plt.figure(figsize=(12, 8)) sns.scatterplot(x=food_security_df_normalized['Quality and Safety'], y=food_security_df_normalized['Affordability'], hue=selected_labels, palette='viridis', s=100, alpha=0.7) plt.title('Clusters based on Quality and Safety & Affordability') plt.xlabel('Quality and Safety') plt.ylabel('Affordability') plt.legend(title='Cluster') plt.show()
+
