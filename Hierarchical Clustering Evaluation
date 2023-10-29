@@ -1,6 +1,108 @@
 1. Compute Clustering Evaluation Metrics:
-from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score # Extract the feature matrix and cluster labels X = food_security_df_normalized[columns_to_normalize] labels = food_security_df_normalized['Cluster'] # Compute the evaluation metrics silhouette = silhouette_score(X, labels) calinski_harabasz = calinski_harabasz_score(X, labels) davies_bouldin = davies_bouldin_score(X, labels) 
+python
+Copy code
+# Created by SvB and Stoyko
+# This script computes clustering evaluation metrics for a given dataset.
+
+from sklearn.metrics import (
+    silhouette_score, 
+    calinski_harabasz_score, 
+    davies_bouldin_score
+)
+
+# Extract the feature matrix and cluster labels
+X = food_security_df_normalized[columns_to_normalize]
+labels = food_security_df_normalized['Cluster']
+
+# Compute the evaluation metrics
+silhouette = silhouette_score(X, labels)
+calinski_harabasz = calinski_harabasz_score(X, labels)
+davies_bouldin = davies_bouldin_score(X, labels)
 2. Silhouette Visualization:
-from sklearn.decomposition import PCA from sklearn.metrics import silhouette_samples # Compute silhouette values for each sample sample_silhouette_values = silhouette_samples(X, labels) # Silhouette Visualization fig, ax1 = plt.subplots(1, 1, figsize=(15, 6)) y_lower = 10 for i in range(1, 3): # For the two clusters ith_cluster_silhouette_values = sample_silhouette_values[labels == i] ith_cluster_silhouette_values.sort() size_cluster_i = ith_cluster_silhouette_values.shape[0] y_upper = y_lower + size_cluster_i color = plt.cm.viridis(float(i) / 2) ax1.fill_betweenx(np.arange(y_lower, y_upper), 0, ith_cluster_silhouette_values, facecolor=color, edgecolor=color, alpha=0.7) ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i)) y_lower = y_upper + 10 ax1.set_title("Silhouette plot for the various clusters") ax1.set_xlabel("Silhouette coefficient values") ax1.set_ylabel("Cluster label") ax1.axvline(x=silhouette, color="red", linestyle="--") ax1.set_yticks([]) ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1]) plt.show() 
+python
+Copy code
+# Created by SvB and Stoyko
+# This script visualizes the silhouette scores for each sample in the dataset.
+
+from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_samples
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Compute silhouette values for each sample
+sample_silhouette_values = silhouette_samples(X, labels)
+
+# Silhouette Visualization
+fig, ax1 = plt.subplots(1, 1, figsize=(15, 6))
+y_lower = 10
+
+for i in range(1, 3):  # For the two clusters
+    ith_cluster_silhouette_values = sample_silhouette_values[labels == i]
+    ith_cluster_silhouette_values.sort()
+    
+    size_cluster_i = ith_cluster_silhouette_values.shape[0]
+    y_upper = y_lower + size_cluster_i
+    
+    color = plt.cm.viridis(float(i) / 2)
+    ax1.fill_betweenx(np.arange(y_lower, y_upper), 
+                      0, 
+                      ith_cluster_silhouette_values, 
+                      facecolor=color, 
+                      edgecolor=color, 
+                      alpha=0.7)
+    
+    ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
+    
+    y_lower = y_upper + 10
+
+ax1.set_title("Silhouette plot for the various clusters")
+ax1.set_xlabel("Silhouette coefficient values")
+ax1.set_ylabel("Cluster label")
+ax1.axvline(x=silhouette, color="red", linestyle="--")
+ax1.set_yticks([])
+ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
+
+plt.show()
 3. 2D Scatter Plot with Cluster Centroids:
-# Use PCA for dimensionality reduction pca = PCA(n_components=2) reduced_features = pca.fit_transform(X) # Compute the centroids for visualization cluster_centroids = food_security_df_normalized.groupby('Cluster')[columns_to_normalize].mean() reduced_centroids = pca.transform(cluster_centroids) # Plotting the clusters in 2D space plt.figure(figsize=(12, 8)) sns.scatterplot(reduced_features[:, 0], reduced_features[:, 1], hue=labels, palette='viridis', s=100, alpha=0.7) sns.scatterplot(reduced_centroids[:, 0], reduced_centroids[:, 1], color='red', s=300, marker='X', label='Centroids') plt.title('2D PCA of Clusters with Centroids') plt.xlabel('Principal Component 1') plt.ylabel('Principal Component 2') plt.legend() plt.show()
+python
+Copy code
+# Created by SvB and Stoyko
+# This script plots a 2D scatter plot of the clusters along with their centroids.
+
+import seaborn as sns
+
+# Use PCA for dimensionality reduction
+pca = PCA(n_components=2)
+reduced_features = pca.fit_transform(X)
+
+# Compute the centroids for visualization
+cluster_centroids = food_security_df_normalized.groupby('Cluster')[columns_to_normalize].mean()
+reduced_centroids = pca.transform(cluster_centroids)
+
+# Plotting the clusters in 2D space
+plt.figure(figsize=(12, 8))
+
+sns.scatterplot(
+    reduced_features[:, 0], 
+    reduced_features[:, 1], 
+    hue=labels, 
+    palette='viridis', 
+    s=100, 
+    alpha=0.7
+)
+
+sns.scatterplot(
+    reduced_centroids[:, 0], 
+    reduced_centroids[:, 1], 
+    color='red', 
+    s=300, 
+    marker='X', 
+    label='Centroids'
+)
+
+plt.title('2D PCA of Clusters with Centroids')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.legend()
+
+plt.show()
