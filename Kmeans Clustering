@@ -1,11 +1,54 @@
-Step 1: Standardizing the Data
-from sklearn.preprocessing import StandardScaler # Standardize the numerical features scaler = StandardScaler() scaled_features = scaler.fit_transform(numerical_features) 
-Step 2: Determining the Optimal Number of Clusters (Elbow Method)
-from sklearn.cluster import KMeans import matplotlib.pyplot as plt # Calculate the Within-Cluster-Sum-of-Squares (WCSS) for different values of k wcss = [] for i in range(1, 11): kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=42) kmeans.fit(scaled_features) wcss.append(kmeans.inertia_) # Plot the Elbow Method graph plt.figure(figsize=(10, 6)) plt.plot(range(1, 11), wcss, marker='o') plt.title('Elbow Method For Optimal k') plt.xlabel('Number of clusters') plt.ylabel('WCSS') plt.show() 
-Step 3: Building the K-Means Clustering Model
-# Build the K-Means Clustering model with the optimal number of clusters optimal_k = 3 kmeans_model = KMeans(n_clusters=optimal_k, init='k-means++', max_iter=300, n_init=10, random_state=42) kmeans_model.fit(scaled_features) 
-Step 4: Assigning Countries to Clusters
-# Assign each country to a cluster cluster_assignments = kmeans_model.labels_ # Add the cluster assignments to the original dataframe global_food_security_index_df['Cluster'] = cluster_assignments 
-Step 5: Cluster Analysis and Visualization
-# Examine the distribution of countries in each cluster cluster_distribution = global_food_security_index_df.groupby('Cluster')['Country'].apply(list) # Investigate the mean values of the features for each cluster cluster_means = global_food_security_index_df.groupby('Cluster').mean() # Create visualizations to compare clusters (e.g., bar plots, clustered heatmap)
+# Created by SvB and Stoyko
+# Script for K-Means clustering analysis
 
+# Step 1: Standardizing the Data
+from sklearn.preprocessing import StandardScaler
+
+# Standardize the numerical features
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(numerical_features)
+
+# Step 2: Determining the Optimal Number of Clusters (Elbow Method)
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+# Calculate the Within-Cluster-Sum-of-Squares (WCSS) for different values of k
+wcss = []
+
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=42)
+    kmeans.fit(scaled_features)
+    wcss.append(kmeans.inertia_)
+
+# Plotting the Elbow Method graph
+plt.figure(figsize=(10, 6))
+plt.plot(range(1, 11), wcss, marker='o')
+plt.title('Elbow Method For Optimal k')
+plt.xlabel('Number of clusters')
+plt.ylabel('WCSS')
+plt.show()
+
+# Step 3: Building the K-Means Clustering Model
+
+# Using the optimal number of clusters
+optimal_k = 3
+kmeans_model = KMeans(n_clusters=optimal_k, init='k-means++', max_iter=300, n_init=10, random_state=42)
+kmeans_model.fit(scaled_features)
+
+# Step 4: Assigning Countries to Clusters
+
+# Assign each country to a specific cluster
+cluster_assignments = kmeans_model.labels_
+
+# Incorporate the cluster assignments into the original dataframe
+global_food_security_index_df['Cluster'] = cluster_assignments
+
+# Step 5: Cluster Analysis and Visualization
+
+# Analyzing the distribution of countries in each cluster
+cluster_distribution = global_food_security_index_df.groupby('Cluster')['Country'].apply(list)
+
+# Exploring the average feature values for every cluster
+cluster_means = global_food_security_index_df.groupby('Cluster').mean()
+
+# Visualization to compare clusters would be created here (e.g., bar plots, clustered heatmap)
